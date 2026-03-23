@@ -11,7 +11,7 @@ const VALID_PASSWORD = "Q3rx244nKe3YfU34!";
 
 app.use((req, res, next) => {
   // Skip authentication for image serving and upload endpoint
-  if (req.path === '/upload' || req.path.startsWith('/images')) {
+  if (req.path.startsWith('/images')) {
     return next();
   }
 
