@@ -4,6 +4,40 @@ import multer from "multer";
 import fs from "fs";
 
 const app = express();
+
+// Authentication middleware
+const VALID_USERNAME = "SleepyDreams";
+const VALID_PASSWORD = "Q3rx244nKe3YfU34!";
+
+app.use((req, res, next) => {
+  // Skip authentication for image serving and upload endpoint
+  if (req.path === '/upload' || req.path.startsWith('/images')) {
+    return next();
+  }
+
+  // Check for basic auth header
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    // No credentials provided, return 401 with WWW-Authenticate header
+    res.set('WWW-Authenticate', 'Basic realm="Media Server"');
+    return res.status(401).send('Authentication required');
+  }
+
+  // Decode base64 credentials
+  const base64Credentials = authHeader.slice(6);
+  const credentials = Buffer.from(base64Credentials, 'base64').toString('utf8');
+  const [username, password] = credentials.split(':');
+
+  // Check credentials
+  if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+    next();
+  } else {
+    res.set('WWW-Authenticate', 'Basic realm="Media Server"');
+    res.status(401).send('Invalid credentials');
+  }
+});
+
 app.use("/images", express.static(path.join(process.cwd(), "images")));
 app.use(express.static(process.cwd()));
 const PORT = process.env.PORT || 3000;
