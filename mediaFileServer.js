@@ -6,8 +6,8 @@ import fs from "fs";
 const app = express();
 
 // Authentication middleware
-const VALID_USERNAME = "SleepyDreams";
-const VALID_PASSWORD = "Q3rx244nKe3YfU34!";
+const VALID_USERNAME = process.env.MEDIA_SERVER_USER
+const VALID_PASSWORD = process.env.MEDIA_SERVER_PASS
 
 app.use((req, res, next) => {
   // Skip authentication for image serving and upload endpoint
