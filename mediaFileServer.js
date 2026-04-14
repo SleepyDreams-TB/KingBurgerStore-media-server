@@ -2,129 +2,168 @@ import express from "express";
 import path from "path";
 import multer from "multer";
 import fs from "fs";
+import { randomUUID } from "crypto";
+import rateLimit from "express-rate-limit";
 
 const app = express();
 
-// Authentication middleware
-const VALID_USERNAME = process.env.MEDIA_SERVER_USER
-const VALID_PASSWORD = process.env.MEDIA_SERVER_PASS
+// ─── Config ────────────────────────────────────────────────────────────────────
+const VALID_USERNAME = process.env.MEDIA_SERVER_USER;
+const VALID_PASSWORD = process.env.MEDIA_SERVER_PASS;
+const PORT = process.env.PORT || 3000;
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_OWNER = "SleepyDreams-TB";
+const GITHUB_REPO = "KingBurgerStore-media-server";
+const GITHUB_BRANCH = "main";
+const ALLOWED_ORIGINS = ["https://kingburger.site", "https://media.kingburger.site"];
 
-app.use((req, res, next) => {
-  // Skip authentication for image serving and upload endpoint
-  if (req.path.startsWith('/images')) {
+// ─── Rate Limiting ──────────────────────────────────────────────────────────────
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000,   // 1 minute
+  max: 20,               // max 20 uploads per minute per IP
+  message: { error: "Too many upload requests. Please wait a moment." }
+});
+
+// ─── Authentication Middleware ──────────────────────────────────────────────────
+function requireAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Basic ")) {
+    res.set("WWW-Authenticate", 'Basic realm="Media Server"');
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  const base64Credentials = authHeader.slice(6);
+  const credentials = Buffer.from(base64Credentials, "base64").toString("utf8");
+  const colonIndex = credentials.indexOf(":");
+  const username = credentials.slice(0, colonIndex);
+  const password = credentials.slice(colonIndex + 1);
+
+  if (username === VALID_USERNAME && password === VALID_PASSWORD) {
     return next();
   }
 
-  // Check for basic auth header
-  const authHeader = req.headers.authorization;
+  res.set("WWW-Authenticate", 'Basic realm="Media Server"');
+  return res.status(401).json({ error: "Invalid credentials" });
+}
 
-  if (!authHeader || !authHeader.startsWith('Basic ')) {
-    // No credentials provided, return 401 with WWW-Authenticate header
-    res.set('WWW-Authenticate', 'Basic realm="Media Server"');
-    return res.status(401).send('Authentication required');
-  }
-
-  // Decode base64 credentials
-  const base64Credentials = authHeader.slice(6);
-  const credentials = Buffer.from(base64Credentials, 'base64').toString('utf8');
-  const [username, password] = credentials.split(':');
-
-  // Check credentials
-  if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-    next();
-  } else {
-    res.set('WWW-Authenticate', 'Basic realm="Media Server"');
-    res.status(401).send('Invalid credentials');
-  }
-});
-
-app.use("/images", express.static(path.join(process.cwd(), "images")));
-app.use(express.static(process.cwd()));
-const PORT = process.env.PORT || 3000;
-
-// GitHub repo details
-const token = process.env.GITHUB_TOKEN;
-const repo = "Cleaning-Website";
-const branch = "media-file-server";
-
-app.listen(PORT, () => {
-  console.log(`Server is running on Port: ${PORT}`);
-});
-
-// Multer configuration for file uploads: Size limit 5MB, only images
-const upload = multer({
-  dest: 'uploads/',
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
-  fileFilter: (req, file, cb) => {
-    // Allowed MIME types
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true); // accept file
-    } else {
-      cb(new Error('Invalid file type. Only JPG, PNG, GIF allowed.'));
-    }
-  }
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    res.status(400).send(`Upload error: ${err.message}`);
-  } else if (err) {
-    res.status(400).send(`Error: ${err.message}`);
-  } else {
-    next();
-  }
-});
-
-app.options('/upload', (req, res) => {
-  // Respond to preflight requests
-  const allowedOrigins = ['https://kingburger.site', 'https://media.kingburger.site'];
+// ─── CORS Helper ───────────────────────────────────────────────────────────────
+function setCorsHeaders(req, res) {
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
   }
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+}
+
+// ─── CORS Preflight ─────────────────────────────────────────────────────────────
+app.options("/upload", (req, res) => {
+  setCorsHeaders(req, res);
   res.sendStatus(200);
 });
 
-app.post('/upload', upload.single('file'), async (req, res) => {
+// ─── Static Files (public — images are intentionally public) ───────────────────
+app.use("/images", express.static(path.join(process.cwd(), "images")));
 
-  if (!req.file) return res.status(400).send('No file uploaded');
+// ─── Admin / UI (requires auth) ────────────────────────────────────────────────
+app.use(requireAuth);
+app.use(express.static(process.cwd()));
 
-  const fileData = fs.readFileSync(req.file.path);
-  const base64File = fileData.toString('base64');
+// ─── Multer Configuration ───────────────────────────────────────────────────────
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
-  const imagesPath = `images/${req.file.originalname}`;
-  const url = `https://api.github.com/repos/SleepyDreams-TB/Cleaning-Website/contents/${imagesPath}`;
+const upload = multer({
+  dest: "uploads/",
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Invalid file type. Only JPG, PNG, GIF, and WEBP are allowed."));
+    }
+  }
+});
 
-  const body = {
-    message: `Add image ${req.file.originalname}`,
-    content: base64File,
-    branch: branch
-  };
+// ─── Filename Sanitiser ─────────────────────────────────────────────────────────
+function sanitiseFilename(name) {
+  return name
+    .replace(/[/\\?%*:|"<>]/g, "-")  // replace shell-dangerous chars
+    .replace(/\.\./g, "-")            // prevent path traversal
+    .replace(/^\.+/, "")              // no leading dots
+    .trim()
+    .slice(0, 100);                   // max length
+}
+
+// ─── Upload Endpoint ────────────────────────────────────────────────────────────
+app.post("/upload", uploadLimiter, upload.single("file"), async (req, res) => {
+  setCorsHeaders(req, res);
+
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded." });
+  }
 
   try {
-    const response = await fetch(url, {
-      method: 'PUT',
+    const originalName = req.file.originalname || "upload";
+    const extMatch = originalName.match(/\.(jpe?g|png|gif|webp)$/i);
+    const ext = extMatch ? extMatch[0].toLowerCase() : ".jpg";
+    const baseName = sanitiseFilename(originalName.replace(/\.[^.]+$/, "")) || randomUUID();
+    const safeName = `${baseName}-${randomUUID().slice(0, 8)}${ext}`;
+    const imagesPath = `images/${safeName}`;
+
+    const fileData = await fs.promises.readFile(req.file.path);
+    const base64File = fileData.toString("base64");
+
+    const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${imagesPath}`;
+
+    const githubRes = await fetch(url, {
+      method: "PUT",
       headers: {
-        Authorization: `token ${token}`,
-        'Content-Type': 'application/json'
+        Authorization: `token ${GITHUB_TOKEN}`,
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify({
+        message: `Upload image ${safeName}`,
+        content: base64File,
+        branch: GITHUB_BRANCH
+      })
     });
 
-    const data = await response.json();
+    const data = await githubRes.json();
 
-    if (response.ok) {
-      res.send(`File uploaded to GitHub: ${data.content.download_url}`);
+    if (githubRes.ok) {
+      return res.status(201).json({
+        success: true,
+        filename: safeName,
+        url: data.content.download_url
+      });
     } else {
-      res.status(500).send(`GitHub upload failed: ${data.message}`);
+      console.error("GitHub API error:", data);
+      return res.status(502).json({ error: `GitHub upload failed: ${data.message}` });
     }
-  } catch (error) {
-    res.status(500).send(`Error uploading to GitHub: ${error.message}`);
+  } catch (err) {
+    console.error("Upload error:", err);
+    return res.status(500).json({ error: `Server error: ${err.message}` });
   } finally {
-    fs.unlinkSync(req.file.path); // remove temporary file
+    if (req.file?.path) {
+      fs.unlink(req.file.path, () => { });
+    }
   }
+});
+
+// ─── Error Handling Middleware (must be last) ───────────────────────────────────
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ error: `Upload error: ${err.message}` });
+  }
+  if (err) {
+    return res.status(400).json({ error: err.message });
+  }
+  next();
+});
+
+// ─── Start ──────────────────────────────────────────────────────────────────────
+app.listen(PORT, () => {
+  console.log(`Media server running on port ${PORT}`);
 });

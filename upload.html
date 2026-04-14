@@ -4,8 +4,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image Upload - Bulk with Rename</title>
+  <title>KingBurger · Media Upload</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet">
   <style>
+    :root {
+      --bg: #0e0e0e;
+      --surface: #181818;
+      --surface2: #222222;
+      --border: #2e2e2e;
+      --accent: #f5a623;
+      --accent2: #e8441a;
+      --text: #f0ede8;
+      --muted: #888;
+      --success: #3ecf8e;
+      --error: #e8441a;
+      --radius: 10px;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -13,93 +30,114 @@
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      padding: 20px;
+      padding: 40px 20px 80px;
     }
 
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .header {
+    /* ── Header ── */
+    header {
       text-align: center;
-      color: white;
-      margin-bottom: 30px;
+      margin-bottom: 48px;
     }
 
-    .header h1 {
-      font-size: 2em;
-      margin-bottom: 10px;
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
     }
 
-    .header p {
-      font-size: 1.1em;
-      opacity: 0.9;
-    }
-
-    .main-card {
-      background: white;
-      border-radius: 15px;
-      padding: 40px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      margin-bottom: 30px;
-    }
-
-    .upload-area {
-      border: 2px dashed #667eea;
-      border-radius: 10px;
-      padding: 50px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      background: #f9f9f9;
-      margin-bottom: 20px;
-    }
-
-    .upload-area:hover {
-      border-color: #764ba2;
-      background: #f0f0f0;
-    }
-
-    .upload-area.dragover {
-      border-color: #764ba2;
-      background: #ede7f6;
-      transform: scale(1.02);
-    }
-
-    .upload-icon {
-      font-size: 4em;
-      margin-bottom: 15px;
-    }
-
-    .upload-text {
-      color: #667eea;
-      font-weight: 600;
-      margin-bottom: 5px;
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 1.2em;
     }
 
-    .upload-subtext {
-      color: #999;
-      font-size: 0.95em;
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4em;
+      font-weight: 800;
+      letter-spacing: -0.02em;
     }
 
-    input[type="file"] {
-      display: none;
+    header p {
+      color: var(--muted);
+      font-size: 0.9em;
     }
 
-    .button-group {
+    /* ── Layout ── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    /* ── Drop Zone ── */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 56px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(245, 166, 35, 0.05);
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .drop-icon {
+      font-size: 2.5em;
+      margin-bottom: 12px;
+    }
+
+    .drop-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1em;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .drop-sub {
+      color: var(--muted);
+      font-size: 0.85em;
+    }
+
+    /* ── Buttons ── */
+    .btn-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
       margin-top: 20px;
     }
 
-    @media (max-width: 600px) {
-      .button-group {
+    @media (max-width: 500px) {
+      .btn-row {
         grid-template-columns: 1fr;
       }
     }
@@ -107,631 +145,677 @@
     button {
       padding: 12px 20px;
       border: none;
-      border-radius: 5px;
-      font-size: 1em;
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95em;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: opacity 0.2s, transform 0.1s;
     }
 
-    .upload-btn {
-      background: #667eea;
-      color: white;
-      width: 100%;
+    button:active {
+      transform: scale(0.98);
     }
 
-    .upload-btn:hover {
-      background: #5568d3;
-    }
-
-    .upload-btn:disabled {
-      background: #ccc;
+    button:disabled {
+      opacity: 0.35;
       cursor: not-allowed;
     }
 
-    .clear-btn {
-      background: #6c757d;
-      color: white;
-      width: 100%;
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
     }
 
-    .clear-btn:hover {
-      background: #5a6268;
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
     }
 
-    .files-list {
-      margin-top: 30px;
+    .btn-ghost:hover {
+      color: var(--text);
     }
 
-    .files-list h3 {
-      color: #333;
-      margin-bottom: 15px;
+    /* ── File List ── */
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1em;
+      font-weight: 700;
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .file-count {
-      background: #667eea;
-      color: white;
+    .badge {
+      background: var(--accent);
+      color: #000;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75em;
+      font-weight: 700;
       padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.85em;
-      font-weight: 600;
+      border-radius: 20px;
     }
 
     .file-item {
-      background: #f9f9f9;
-      padding: 20px;
-      border-radius: 5px;
-      margin-bottom: 15px;
-      border-left: 4px solid #667eea;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 10px;
     }
 
     .file-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
-    }
-
-    .file-name {
-      color: #333;
-      font-weight: 600;
-    }
-
-    .file-size {
-      color: #999;
-      font-size: 0.9em;
-      background: #f0f0f0;
-      padding: 4px 8px;
-      border-radius: 3px;
-    }
-
-    .filename-section {
       margin-bottom: 12px;
+      gap: 12px;
     }
 
-    .filename-label {
-      display: block;
-      color: #666;
+    .file-orig {
       font-size: 0.85em;
-      margin-bottom: 6px;
-      font-weight: 500;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .filename-input-group {
+    .file-sz {
+      font-size: 0.78em;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .name-row {
       display: flex;
-      gap: 10px;
-      align-items: flex-end;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
     }
 
-    .filename-input {
+    .name-input {
       flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
       padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 0.9em;
-      font-family: 'Courier New', monospace;
-      transition: border-color 0.3s;
+      color: var(--text);
+      font-family: 'DM Mono', 'Courier New', monospace;
+      font-size: 0.85em;
+      transition: border-color 0.2s;
     }
 
-    .filename-input:focus {
+    .name-input:focus {
       outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+      border-color: var(--accent);
     }
 
-    .file-ext {
-      background: #f0f0f0;
-      padding: 8px 12px;
-      border-radius: 5px;
-      font-size: 0.9em;
-      font-family: 'Courier New', monospace;
-      color: #666;
-      border: 1px solid #ddd;
+    .name-input.invalid {
+      border-color: var(--error);
+    }
+
+    .ext-tag {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-family: monospace;
+      font-size: 0.85em;
+      color: var(--muted);
     }
 
     .file-actions {
       display: flex;
-      gap: 10px;
-      margin-top: 12px;
+      gap: 8px;
     }
 
-    .remove-file-btn {
-      background: #dc3545;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 3px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.85em;
-      flex: 1;
+    .btn-sm {
+      padding: 5px 12px;
+      font-size: 0.8em;
+      border-radius: 6px;
     }
 
-    .remove-file-btn:hover {
-      background: #c82333;
+    .btn-danger {
+      background: rgba(232, 68, 26, 0.15);
+      color: var(--error);
+      border: 1px solid rgba(232, 68, 26, 0.3);
     }
 
-    .reset-name-btn {
-      background: #6c757d;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 3px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.85em;
+    .btn-danger:hover {
+      background: rgba(232, 68, 26, 0.25);
     }
 
-    .reset-name-btn:hover {
-      background: #5a6268;
+    .btn-reset {
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border);
     }
 
-    .urls-card {
-      background: white;
-      border-radius: 15px;
-      padding: 40px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    .btn-reset:hover {
+      color: var(--text);
+    }
+
+    .validation-msg {
+      font-size: 0.78em;
+      color: var(--error);
+      margin-top: 4px;
       display: none;
     }
 
-    .urls-card.show {
-      display: block;
-    }
-
-    .urls-card h2 {
-      color: #333;
-      margin-bottom: 20px;
-    }
-
-    .url-item {
-      background: #f9f9f9;
-      padding: 15px;
-      border-radius: 5px;
-      margin-bottom: 15px;
-      border: 1px solid #ddd;
-    }
-
-    .url-name {
-      color: #667eea;
-      font-weight: 600;
-      font-size: 0.9em;
-      margin-bottom: 8px;
-    }
-
-    .url-box {
-      background: white;
-      padding: 12px;
-      border-radius: 5px;
-      border: 1px solid #ddd;
-      word-break: break-all;
-      color: #333;
-      font-size: 0.85em;
-      font-family: 'Courier New', monospace;
-      margin-bottom: 10px;
-    }
-
-    .copy-btn {
-      background: #28a745;
-      color: white;
-      padding: 8px 15px;
-      font-size: 0.85em;
-      border-radius: 5px;
-      border: none;
-      cursor: pointer;
-      width: 100%;
-    }
-
-    .copy-btn:hover {
-      background: #218838;
-    }
-
-    .status {
-      padding: 15px;
-      border-radius: 5px;
-      text-align: center;
-      font-weight: 600;
-      margin-top: 15px;
-      display: none;
-    }
-
-    .status.success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-      display: block;
-    }
-
-    .status.error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-      display: block;
-    }
-
-    .status.loading {
-      background: #d1ecf1;
-      color: #0c5460;
-      border: 1px solid #bee5eb;
-      display: block;
-    }
-
+    /* ── Progress ── */
     .progress-item {
-      background: #f9f9f9;
-      padding: 15px;
-      border-radius: 5px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
       margin-bottom: 10px;
-      border-left: 4px solid #667eea;
     }
 
-    .progress-name {
-      color: #333;
-      font-weight: 600;
-      margin-bottom: 8px;
+    .progress-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.88em;
     }
 
-    .progress-bar {
-      background: #e9ecef;
-      border-radius: 3px;
-      height: 8px;
+    .progress-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
       overflow: hidden;
     }
 
     .progress-fill {
-      background: #667eea;
       height: 100%;
-      transition: width 0.3s;
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.4s ease;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
     }
 
-    .status-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 3px;
+    .progress-fill.done {
+      background: var(--success);
+    }
+
+    .progress-fill.fail {
+      background: var(--error);
+    }
+
+    .p-badge {
       font-size: 0.75em;
       font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
     }
 
-    .status-badge.pending {
-      background: #fff3cd;
-      color: #856404;
+    .p-badge.pending {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--muted);
     }
 
-    .status-badge.uploading {
-      background: #d1ecf1;
-      color: #0c5460;
+    .p-badge.uploading {
+      background: rgba(245, 166, 35, 0.15);
+      color: var(--accent);
     }
 
-    .status-badge.success {
-      background: #d4edda;
-      color: #155724;
+    .p-badge.success {
+      background: rgba(62, 207, 142, 0.15);
+      color: var(--success);
     }
 
-    .status-badge.error {
-      background: #f8d7da;
-      color: #721c24;
+    .p-badge.error {
+      background: rgba(232, 68, 26, 0.15);
+      color: var(--error);
+    }
+
+    /* ── Status Banner ── */
+    .status-banner {
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 0.9em;
+      font-weight: 500;
+      margin-top: 16px;
+      display: none;
+    }
+
+    .status-banner.error {
+      background: rgba(232, 68, 26, 0.12);
+      color: var(--error);
+      border: 1px solid rgba(232, 68, 26, 0.3);
+    }
+
+    .status-banner.success {
+      background: rgba(62, 207, 142, 0.12);
+      color: var(--success);
+      border: 1px solid rgba(62, 207, 142, 0.3);
+    }
+
+    .status-banner.show {
+      display: block;
+    }
+
+    /* ── Results ── */
+    .results-card {
+      display: none;
+    }
+
+    .results-card.show {
+      display: block;
+    }
+
+    .result-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .result-item.failed {
+      border-color: rgba(232, 68, 26, 0.3);
+    }
+
+    .result-name {
+      font-size: 0.85em;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .result-url {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: monospace;
+      font-size: 0.78em;
+      word-break: break-all;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .btn-copy {
+      background: rgba(62, 207, 142, 0.12);
+      color: var(--success);
+      border: 1px solid rgba(62, 207, 142, 0.3);
+      width: 100%;
+      padding: 8px;
+      font-size: 0.85em;
+      border-radius: 6px;
+    }
+
+    .btn-copy:hover {
+      background: rgba(62, 207, 142, 0.22);
+    }
+
+    .btn-copy.copied {
+      opacity: 0.6;
+    }
+
+    .error-msg {
+      color: var(--error);
+      font-size: 0.85em;
+    }
+
+    /* ── Hidden ── */
+    .hidden {
+      display: none !important;
     }
   </style>
 </head>
 
 <body>
+
   <div class="container">
-    <div class="header">
-      <h1>📸 Bulk Image Upload</h1>
-      <p>Upload multiple images with custom filenames</p>
-    </div>
+    <header>
+      <div class="logo">
+        <div class="logo-icon">🍔</div>
+        <span class="logo-text">KingBurger Media</span>
+      </div>
+      <p>Upload product images · JPG, PNG, GIF, WEBP · Max 5 MB each</p>
+    </header>
 
-    <!-- Upload Section -->
-    <div class="main-card">
-      <form id="uploadForm">
-        <div class="upload-area" id="uploadArea">
-          <div class="upload-icon">📁</div>
-          <div class="upload-text">Click to upload or drag and drop</div>
-          <div class="upload-subtext">Multiple images supported (JPG, PNG, GIF - Max 5MB each)</div>
-          <input type="file" id="fileInput" name="images" accept="image/*" multiple required>
-        </div>
-
-        <div class="button-group">
-          <button type="submit" class="upload-btn" id="uploadBtn" disabled>Upload Selected Images</button>
-          <button type="button" class="clear-btn" onclick="clearFiles()">Clear All</button>
-        </div>
-
-        <div class="status" id="status"></div>
-      </form>
-
-      <!-- Files List with Editable Names -->
-      <div class="files-list" id="filesListContainer" style="display: none;">
-        <h3>
-          📋 Selected Images
-          <span class="file-count" id="fileCount">0</span>
-        </h3>
-        <div id="filesList"></div>
+    <!-- Upload Card -->
+    <div class="card">
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
+        <div class="drop-icon">📁</div>
+        <div class="drop-title">Click to browse or drag images here</div>
+        <div class="drop-sub">Multiple files supported · Max 5 MB each</div>
       </div>
 
-      <!-- Upload Progress -->
-      <div id="progressContainer" style="display: none; margin-top: 30px;">
-        <h3 style="color: #333; margin-bottom: 15px;">📤 Upload Progress</h3>
-        <div id="progressList"></div>
+      <div class="btn-row">
+        <button class="btn-primary" id="uploadBtn" disabled>Upload Images</button>
+        <button class="btn-ghost" onclick="clearAll()">Clear All</button>
       </div>
+
+      <div class="status-banner" id="statusBanner"></div>
     </div>
 
-    <!-- Results Section -->
-    <div class="urls-card" id="urlsCard">
-      <h2>✅ Upload Complete!</h2>
-      <p style="color: #666; margin-bottom: 20px;">Copy the URLs below to use in your product uploads:</p>
-      <div id="urlsList"></div>
+    <!-- File List -->
+    <div class="card hidden" id="fileListCard">
+      <div class="section-title">
+        Selected Images
+        <span class="badge" id="fileCount">0</span>
+      </div>
+      <div id="fileList"></div>
+    </div>
+
+    <!-- Progress -->
+    <div class="card hidden" id="progressCard">
+      <div class="section-title">Uploading…</div>
+      <div id="progressList"></div>
+    </div>
+
+    <!-- Results -->
+    <div class="card results-card" id="resultsCard">
+      <div class="section-title">✅ Upload Complete</div>
+      <p style="color:var(--muted); font-size:0.88em; margin-bottom:20px;">Copy the URLs below to use in your product
+        listings.</p>
+      <div id="resultsList"></div>
     </div>
   </div>
 
   <script>
+    // ── Config ──────────────────────────────────────────────────────────────────
     const MEDIA_SERVER = "https://media.kingburger.site";
-    let selectedFiles = [];
-    let fileNames = {}; // Store custom names: fileIndex -> customName
+    // Credentials are sent via Basic Auth on each upload request.
+    // The browser will prompt for these on first load (via the server's 401 challenge),
+    // or you can hardcode them here if this page is only ever accessed locally/internally.
+    // For a truly internal tool, you can set:
+    // const AUTH_HEADER = "Basic " + btoa("username:password");
+    // Otherwise leave as null and the browser will prompt.
+    const AUTH_HEADER = null;
+
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const MAX_SIZE = 5 * 1024 * 1024;
+
+    // ── State ───────────────────────────────────────────────────────────────────
+    let selectedFiles = [];   // { file, customBase }
     let uploadedUrls = [];
 
-    // Drag & Drop
-    const uploadArea = document.getElementById("uploadArea");
+    // ── DOM Refs ─────────────────────────────────────────────────────────────────
+    const dropZone = document.getElementById("dropZone");
     const fileInput = document.getElementById("fileInput");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const fileListCard = document.getElementById("fileListCard");
+    const fileList = document.getElementById("fileList");
+    const fileCountEl = document.getElementById("fileCount");
+    const progressCard = document.getElementById("progressCard");
+    const progressList = document.getElementById("progressList");
+    const resultsCard = document.getElementById("resultsCard");
+    const resultsList = document.getElementById("resultsList");
+    const statusBanner = document.getElementById("statusBanner");
 
-    uploadArea.addEventListener("click", () => fileInput.click());
-
-    uploadArea.addEventListener("dragover", (e) => {
+    // ── Drop Zone ────────────────────────────────────────────────────────────────
+    dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("dragover"); });
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+    dropZone.addEventListener("drop", e => {
       e.preventDefault();
-      uploadArea.classList.add("dragover");
+      dropZone.classList.remove("dragover");
+      addFiles(Array.from(e.dataTransfer.files));
+    });
+    fileInput.addEventListener("change", () => {
+      addFiles(Array.from(fileInput.files));
+      fileInput.value = ""; // reset so same file can be re-added after removal
     });
 
-    uploadArea.addEventListener("dragleave", () => {
-      uploadArea.classList.remove("dragover");
-    });
+    // ── File Validation & Adding ─────────────────────────────────────────────────
+    function addFiles(incoming) {
+      const errors = [];
+      const valid = [];
 
-    uploadArea.addEventListener("drop", (e) => {
-      e.preventDefault();
-      uploadArea.classList.remove("dragover");
-      fileInput.files = e.dataTransfer.files;
-      handleFileSelect();
-    });
-
-    // File Selection
-    fileInput.addEventListener("change", handleFileSelect);
-
-    function handleFileSelect() {
-      selectedFiles = Array.from(fileInput.files);
-      fileNames = {}; // Reset custom names
-      renderFilesList();
-      document.getElementById("uploadBtn").disabled = selectedFiles.length === 0;
-    }
-
-    function getFileExtension(file) {
-      return file.name.split('.').pop().toLowerCase();
-    }
-
-    function getFileNameWithoutExtension(file) {
-      return file.name.split('.').slice(0, -1).join('.');
-    }
-
-    function renderFilesList() {
-      const container = document.getElementById("filesListContainer");
-      const list = document.getElementById("filesList");
-      const count = document.getElementById("fileCount");
-
-      if (selectedFiles.length === 0) {
-        container.style.display = "none";
-        return;
+      for (const f of incoming) {
+        if (!ALLOWED_TYPES.includes(f.type)) {
+          errors.push(`"${f.name}" — unsupported type (${f.type || "unknown"})`);
+          continue;
+        }
+        if (f.size > MAX_SIZE) {
+          errors.push(`"${f.name}" — exceeds 5 MB limit`);
+          continue;
+        }
+        // Deduplicate by name+size
+        const isDupe = selectedFiles.some(s => s.file.name === f.name && s.file.size === f.size);
+        if (!isDupe) {
+          valid.push({ file: f, customBase: stripExt(f.name) });
+        }
       }
 
-      container.style.display = "block";
-      count.textContent = selectedFiles.length;
+      if (errors.length) {
+        showBanner("⚠️ Skipped: " + errors.join("; "), "error");
+      } else {
+        hideBanner();
+      }
 
-      list.innerHTML = selectedFiles.map((file, idx) => {
-        const ext = getFileExtension(file);
-        const nameWithoutExt = getFileNameWithoutExtension(file);
-        const customName = fileNames[idx] || nameWithoutExt;
+      selectedFiles = [...selectedFiles, ...valid];
+      renderFileList();
+      uploadBtn.disabled = selectedFiles.length === 0;
+    }
 
+    function stripExt(name) { return name.replace(/\.[^.]+$/, ""); }
+    function getExt(name) { return (name.match(/\.[^.]+$/) || [""])[0].toLowerCase(); }
+
+    // ── Filename Sanitisation (client-side mirror of server) ─────────────────────
+    function sanitise(name) {
+      return name
+        .replace(/[/\\?%*:|"<>]/g, "-")
+        .replace(/\.\./g, "-")
+        .replace(/^\.+/, "")
+        .trim()
+        .slice(0, 100);
+    }
+
+    // ── Render File List ─────────────────────────────────────────────────────────
+    function renderFileList() {
+      if (selectedFiles.length === 0) {
+        fileListCard.classList.add("hidden");
+        return;
+      }
+      fileListCard.classList.remove("hidden");
+      fileCountEl.textContent = selectedFiles.length;
+
+      fileList.innerHTML = selectedFiles.map((entry, idx) => {
+        const ext = getExt(entry.file.name);
+        const sizeMB = (entry.file.size / 1024 / 1024).toFixed(2);
         return `
-                    <div class="file-item">
-                        <div class="file-header">
-                            <span class="file-name">📄 ${file.name}</span>
-                            <span class="file-size">${(file.size / 1024 / 1024).toFixed(2)} MB</span>
-                        </div>
-
-                        <div class="filename-section">
-                            <label class="filename-label">Custom Filename:</label>
-                            <div class="filename-input-group">
-                                <input 
-                                    type="text" 
-                                    class="filename-input" 
-                                    value="${customName}"
-                                    placeholder="Enter custom filename (without extension)"
-                                    onchange="updateFileName(${idx}, this.value)"
-                                    onkeyup="updateFileName(${idx}, this.value)"
-                                >
-                                <div class="file-ext">.${ext}</div>
-                            </div>
-                        </div>
-
-                        <div class="file-actions">
-                            <button type="button" class="reset-name-btn" onclick="resetFileName(${idx})">Reset Name</button>
-                            <button type="button" class="remove-file-btn" onclick="removeFile(${idx})">Remove</button>
-                        </div>
-                    </div>
-                `;
+        <div class="file-item" id="fi-${idx}">
+          <div class="file-header">
+            <span class="file-orig">📄 ${escHtml(entry.file.name)}</span>
+            <span class="file-sz">${sizeMB} MB</span>
+          </div>
+          <div class="name-row">
+            <input
+              class="name-input"
+              id="ni-${idx}"
+              type="text"
+              value="${escHtml(entry.customBase)}"
+              placeholder="custom filename (no extension)"
+              oninput="updateName(${idx}, this)"
+            >
+            <span class="ext-tag">${escHtml(ext)}</span>
+          </div>
+          <div class="validation-msg" id="vm-${idx}"></div>
+          <div class="file-actions">
+            <button class="btn-sm btn-reset" onclick="resetName(${idx})">Reset</button>
+            <button class="btn-sm btn-danger" onclick="removeFile(${idx})">Remove</button>
+          </div>
+        </div>`;
       }).join("");
     }
 
-    function updateFileName(idx, newName) {
-      fileNames[idx] = newName.trim();
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
     }
 
-    function resetFileName(idx) {
-      delete fileNames[idx];
-      renderFilesList();
+    function updateName(idx, input) {
+      const raw = input.value.trim();
+      const clean = sanitise(raw);
+      selectedFiles[idx].customBase = clean || stripExt(selectedFiles[idx].file.name);
+
+      const vm = document.getElementById(`vm-${idx}`);
+      if (raw !== clean && raw.length > 0) {
+        input.classList.add("invalid");
+        vm.textContent = `Invalid characters will be replaced. Saved as: "${clean}"`;
+        vm.style.display = "block";
+      } else {
+        input.classList.remove("invalid");
+        vm.style.display = "none";
+      }
+    }
+
+    function resetName(idx) {
+      selectedFiles[idx].customBase = stripExt(selectedFiles[idx].file.name);
+      renderFileList();
     }
 
     function removeFile(idx) {
       selectedFiles.splice(idx, 1);
-      // Clean up fileNames references
-      const newFileNames = {};
-      let newIdx = 0;
-      for (let i = 0; i < selectedFiles.length; i++) {
-        if (i !== idx) {
-          if (fileNames[i]) {
-            newFileNames[newIdx] = fileNames[i];
-          }
-          newIdx++;
-        }
-      }
-      fileNames = newFileNames;
-
-      // Reset file input
-      const newInput = document.createElement("input");
-      newInput.type = "file";
-      newInput.id = "fileInput";
-      newInput.name = "images";
-      newInput.accept = "image/*";
-      newInput.multiple = true;
-      newInput.addEventListener("change", handleFileSelect);
-      fileInput.replaceWith(newInput);
-
-      // Update reference
-      const fileInputEl = document.getElementById("fileInput");
-      fileInputEl.addEventListener("change", handleFileSelect);
-
-      renderFilesList();
+      renderFileList();
+      uploadBtn.disabled = selectedFiles.length === 0;
     }
 
-    function clearFiles() {
-      fileInput.value = "";
-      selectedFiles = [];
-      fileNames = {};
-      renderFilesList();
-      document.getElementById("uploadBtn").disabled = true;
-      document.getElementById("filesListContainer").style.display = "none";
-      document.getElementById("progressContainer").style.display = "none";
-      document.getElementById("urlsCard").classList.remove("show");
-    }
+    // ── Upload ───────────────────────────────────────────────────────────────────
+    uploadBtn.addEventListener("click", startUpload);
 
-    // Upload Handler
-    document.getElementById("uploadForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      if (selectedFiles.length === 0) {
-        showStatus("Please select at least one image", "error");
-        return;
-      }
-
-      document.getElementById("uploadBtn").disabled = true;
-      document.getElementById("progressContainer").style.display = "block";
+    async function startUpload() {
+      if (selectedFiles.length === 0) return;
+      hideBanner();
+      uploadBtn.disabled = true;
       uploadedUrls = [];
 
-      // Initialize progress for all files
-      const progressList = document.getElementById("progressList");
-      progressList.innerHTML = selectedFiles.map((file, idx) => `
-                <div class="progress-item" id="progress-${idx}">
-                    <div class="progress-name">
-                        <span>${file.name}</span>
-                        <span class="status-badge pending">Pending</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 0%"></div>
-                    </div>
-                </div>
-            `).join("");
+      // Show progress
+      progressCard.classList.remove("hidden");
+      progressList.innerHTML = selectedFiles.map((entry, idx) => {
+        const name = entry.customBase + getExt(entry.file.name);
+        return `
+        <div class="progress-item" id="pi-${idx}">
+          <div class="progress-header">
+            <span>${escHtml(name)}</span>
+            <span class="p-badge pending" id="pb-${idx}">Pending</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="pf-${idx}"></div></div>
+        </div>`;
+      }).join("");
 
-      // Upload files sequentially
-      for (let idx = 0; idx < selectedFiles.length; idx++) {
-        await uploadFile(selectedFiles[idx], idx);
+      // Upload sequentially (avoid hitting rate limit)
+      for (let i = 0; i < selectedFiles.length; i++) {
+        await uploadOne(selectedFiles[i], i);
       }
 
-      // Show results
-      showUploadResults();
-      document.getElementById("uploadBtn").disabled = false;
-    });
+      showResults();
+      uploadBtn.disabled = false;
+    }
 
-    async function uploadFile(file, idx) {
-      const progressEl = document.getElementById(`progress-${idx}`);
-      const badge = progressEl.querySelector(".status-badge");
-      const progressFill = progressEl.querySelector(".progress-fill");
+    async function uploadOne(entry, idx) {
+      const badge = document.getElementById(`pb-${idx}`);
+      const fill = document.getElementById(`pf-${idx}`);
+      const ext = getExt(entry.file.name);
+      const filename = (entry.customBase || stripExt(entry.file.name)) + ext;
+
+      badge.textContent = "Uploading…";
+      badge.className = "p-badge uploading";
 
       try {
-        badge.textContent = "Uploading";
-        badge.className = "status-badge uploading";
-
-        const ext = getFileExtension(file);
-        const customName = fileNames[idx] || getFileNameWithoutExtension(file);
-        const filename = `${customName}.${ext}`;
-
         const fd = new FormData();
-        fd.append("file", file, filename);
+        fd.append("file", entry.file, filename);
+
+        const headers = {};
+        if (AUTH_HEADER) headers["Authorization"] = AUTH_HEADER;
 
         const res = await fetch(`${MEDIA_SERVER}/upload`, {
           method: "POST",
-          body: fd
+          headers,
+          body: fd,
+          credentials: "include"   // sends cookies / browser-cached Basic Auth
         });
 
-        const text = await res.text();
+        let data;
+        try { data = await res.json(); } catch { data = { error: await res.text() }; }
 
-        if (res.ok) {
-          const urlMatch = text.match(/https:\/\/[^\s]+/);
-          const imageUrl = urlMatch ? urlMatch[0] : text;
-          uploadedUrls.push({ name: filename, url: imageUrl });
-
-          badge.textContent = "✅ Success";
-          badge.className = "status-badge success";
-          progressFill.style.width = "100%";
+        if (res.ok && data.url) {
+          uploadedUrls.push({ name: filename, url: data.url });
+          badge.textContent = "✅ Done";
+          badge.className = "p-badge success";
+          fill.style.width = "100%";
+          fill.classList.add("done");
         } else {
-          throw new Error(text);
+          throw new Error(data.error || `HTTP ${res.status}`);
         }
       } catch (err) {
-        badge.textContent = "❌ Error";
-        badge.className = "status-badge error";
-        progressFill.style.width = "100%";
-        uploadedUrls.push({ name: file.name, url: null, error: err.message });
+        const msg = err.message.includes("Failed to fetch")
+          ? "Could not reach the upload server. Check your network."
+          : err.message;
+        uploadedUrls.push({ name: filename, url: null, error: msg });
+        badge.textContent = "❌ Failed";
+        badge.className = "p-badge error";
+        fill.style.width = "100%";
+        fill.classList.add("fail");
       }
     }
 
-    function showUploadResults() {
-      const urlsList = document.getElementById("urlsList");
-      const card = document.getElementById("urlsCard");
-
-      urlsList.innerHTML = uploadedUrls.map((item, idx) => {
+    // ── Results ──────────────────────────────────────────────────────────────────
+    function showResults() {
+      resultsList.innerHTML = uploadedUrls.map((item, i) => {
         if (item.error) {
           return `
-                        <div class="url-item" style="border-left: 4px solid #dc3545;">
-                            <div class="url-name">❌ ${item.name}</div>
-                            <div style="color: #721c24; font-size: 0.9em;">Error: ${item.error}</div>
-                        </div>
-                    `;
+          <div class="result-item failed">
+            <div class="result-name">❌ ${escHtml(item.name)}</div>
+            <div class="error-msg">${escHtml(item.error)}</div>
+          </div>`;
         }
         return `
-                    <div class="url-item">
-                        <div class="url-name">✅ ${item.name}</div>
-                        <div class="url-box">${item.url}</div>
-                        <button type="button" class="copy-btn" onclick="copyUrl('${item.url}')">Copy URL</button>
-                    </div>
-                `;
+        <div class="result-item">
+          <div class="result-name">✅ ${escHtml(item.name)}</div>
+          <div class="result-url">${escHtml(item.url)}</div>
+          <button class="btn-copy" id="copy-${i}" onclick="copyUrl('${escHtml(item.url)}', ${i})">Copy URL</button>
+        </div>`;
       }).join("");
 
-      card.classList.add("show");
-      card.scrollIntoView({ behavior: "smooth" });
+      resultsCard.classList.add("show");
+      resultsCard.scrollIntoView({ behavior: "smooth" });
     }
 
-    function copyUrl(url) {
+    function copyUrl(url, idx) {
       navigator.clipboard.writeText(url).then(() => {
-        const btn = event.target;
-        const originalText = btn.textContent;
+        const btn = document.getElementById(`copy-${idx}`);
         btn.textContent = "✅ Copied!";
+        btn.classList.add("copied");
         setTimeout(() => {
-          btn.textContent = originalText;
+          btn.textContent = "Copy URL";
+          btn.classList.remove("copied");
         }, 2000);
       });
     }
 
-    function showStatus(message, type) {
-      const statusEl = document.getElementById("status");
-      statusEl.textContent = message;
-      statusEl.className = `status ${type}`;
+    // ── Helpers ──────────────────────────────────────────────────────────────────
+    function clearAll() {
+      selectedFiles = [];
+      uploadedUrls = [];
+      fileListCard.classList.add("hidden");
+      progressCard.classList.add("hidden");
+      resultsCard.classList.remove("show");
+      hideBanner();
+      uploadBtn.disabled = true;
+      fileList.innerHTML = "";
+      fileInput.value = "";
+    }
+
+    function showBanner(msg, type) {
+      statusBanner.textContent = msg;
+      statusBanner.className = `status-banner ${type} show`;
+    }
+    function hideBanner() {
+      statusBanner.className = "status-banner";
     }
   </script>
 </body>
