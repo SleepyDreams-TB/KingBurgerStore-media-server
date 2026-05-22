@@ -10,7 +10,6 @@ const VALID_USERNAME = process.env.MEDIA_SERVER_USER
 const VALID_PASSWORD = process.env.MEDIA_SERVER_PASS
 
 app.use((req, res, next) => {
-  // Skip authentication for image serving and upload endpoint
   if (req.path.startsWith('/images')) {
     return next();
   }
@@ -39,6 +38,7 @@ app.use((req, res, next) => {
 });
 
 app.use("/images", express.static(path.join(process.cwd(), "images")));
+app.use("/images", (req, res) => res.status(404).end());
 app.use(express.static(process.cwd()));
 const PORT = process.env.PORT || 3000;
 
