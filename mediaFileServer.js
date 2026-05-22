@@ -6,6 +6,7 @@ import { randomUUID } from "crypto";
 import rateLimit from "express-rate-limit";
 
 const app = express();
+app.set("trust proxy", 1);
 
 // ─── Config ────────────────────────────────────────────────────────────────────
 const VALID_USERNAME = process.env.MEDIA_SERVER_USER;
